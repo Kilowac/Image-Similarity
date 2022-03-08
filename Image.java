@@ -1,22 +1,50 @@
-import java.util.*;
-import java.lang.*;
-import java.io.*;
+import java.util.LinkedList;
+import java.util.Scanner;
+import java.util.Arrays;
+import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public class Image {
 	//UNICODE DOESN'T WORK ON BASH '\u2591' == Light Shade '\u2592' == Medium Shade '\u2593' == Dark Shade '\u2588' == Solid
 	private static final int blackPixel = 1;
 	private static final int whitePixel = 0;
-
-	public static void main(String[] args) throws java.io.IOException {
-		Scanner input = new Scanner(new File("images.txt"));
+	
+	//TODO: Provide a '--unicode' option:
+	//	Currently the default output is unicode, some shells
+	//	such as bash will present the shaded unicode blocks as '?;'
+	//	change the default unicode output to ASCII characters and then add an optional argument
+	//	to enable the unicode output.
+	
+	/*	
+	private static char lb = 'O'; //\u2591
+	private static char alb = 'E';//\u2591
+	private static char mb = 'U'; //\u2592
+	private static char db = 'H'; //\u2593
+	//*/
+	
+	public static void main(String[] args) throws IOException {
+		Scanner input = new Scanner(System.in);//Default to avoid an uninitialized compilation error
+		boolean file_input = false;
 		LinkedList<String> results = new LinkedList<String>();
 		boolean visualize = false, animate = false;
 		for(int i = 0; i < args.length; i++){
-			if(args[i].equals("--f")){
+			if(args[i].equals("--h")){
+				System.out.println("\nUsage => java Image [--f <FILEPATH>] [--v] [--a] [--h]");
+				System.out.printf("\nImage: A CLI program that takes a text input file with correct format, compare the 'images' of each image and produce the similarity of them.\n\n");
+				System.out.printf("required arguments:\n  %-21s%s\n","--f <FILEPATH>","One argument providing the file that contains the 'images' to be read.\n");
+				System.out.println("optional arguments:");
+				System.out.printf("  %-21s%s\n","--h","Show this help message and exit");
+				System.out.printf("  %-21s%s\n  %-21s%s\n","--v","Visualization; this argument will output the two images and show each rotation and transformation taken","","in the pursuit to find the images' similarity");
+				System.out.printf("  %-21s%s\n","--a","Animate; this argument slowsdown the output of the visualization in order to view the output more as an 'animation.'\n","NOTE: Visualization argument is a prerequisite for this option. ");
+				//System.out.printf("  %-21s%s\n  %-21s%s\n","--unicode","This option changes the defualt output of letters to shaded unicode blocks; this option","","may not work as intended depending on your current working the shell.");
+				System.exit(0);
+
+			}else if(args[i].equals("--f")){
 				try{
 					input = new Scanner(new File(args[i+1]));
 					i++;
+					file_input = true;
 				} catch(Exception e){
 					i = i;
 				}
@@ -24,8 +52,18 @@ public class Image {
 				visualize = true;
 			} else if(args[i].equals("--a")){
 				animate = true;
+			} else if(args[i].equals("--unicode")) {
+			
 			}
 		}
+
+		if(args.length == 0 || !file_input) {
+			System.out.println("Usage => java Image [--f <FILEPATH>] [--v] [--a] [--h]");
+			System.out.println("\tImage: error: the following arguments are required: --f <FILEPATH>");
+			System.out.println("\tTry '--h' for help.");
+			System.exit(0);
+		}
+
 		animate = visualize && animate;
 
 		int tCases = input.nextInt();
@@ -64,21 +102,10 @@ public class Image {
 				for(int i = 0; i < plane.length; i++)
 					for(int j = 0; j < plane[0].length; j++)
 						plane[i][j] = ' ';
-				/*/print
-				for(char[] i : plane)
-					System.out.println(Arrays.toString(i));//*/
-				//center image2
 				System.out.println();
 				for(int i = hold-1, y = 0; y < image2.length; i++, y++)
 					for(int j = hold-1, x = 0; x < image2[0].length; j++, x++)
 						plane[i][j] = image2[y][x] == blackPixel ? '\u2593' : '\u2591' ;//'H' : 'O';
-				/*/print
-				for(int i = 0; i < plane.length; i++){
-					for(int j = 0; j < plane[0].length; j++)
-						System.out.printf("%c", plane[i][j]);
-					System.out.println();
-				}//*/
-
 			}
 
 			int[][][] imageOrientation1 = new int[4][image1.length][image1[0].length];
